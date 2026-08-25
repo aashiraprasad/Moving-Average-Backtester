@@ -1,363 +1,63 @@
 # Moving Average Crossover Backtester
 
-A small quantitative finance project exploring **moving-average crossover strategies** using Python.
-
-This is my first quantitative finance project, built as an early exploration of algorithmic trading, financial time series, and backtesting.
-
-The project compares two simple technical strategies:
-
-* **20/50 Exponentially Weighted Moving Average (EWMA) crossover**
-* **20/50 Simple Moving Average (SMA) crossover**
-
-The strategies are tested across several stocks and compared against a simple **buy-and-hold** benchmark.
-
-> **Note:** This project is for educational purposes only. It is not intended to provide financial advice or a production-ready trading system.
-
----
-
-## Project Overview
-
-The basic idea is straightforward:
-
-> If the short-term moving average crosses above the long-term moving average, generate a buy signal. If it crosses below, generate a sell signal.
-
-For both strategies, I use:
-
-* Short moving average: **20 trading days**
-* Long moving average: **50 trading days**
-
-The EWMA strategy uses exponentially weighted averages, while the SMA strategy uses ordinary rolling averages.
-
-The project then asks:
-
-**How do these simple strategies perform compared with simply buying and holding the stock?**
-
----
-
-## Strategies
-
-### 1. EWMA Crossover
-
-The EWMA strategy calculates:
-
-* `EMA20`
-* `EMA50`
-
-A buy signal is generated when the previous day's EMA20 was below EMA50 and the current EMA20 moves above EMA50.
-
-A sell signal is generated for the opposite crossover.
-
-The implementation also shifts the resulting position by one day before calculating strategy returns, so the signal generated on a day is not immediately used to calculate that same day's return.
-
-### 2. SMA Crossover
-
-The SMA strategy works in the same way, but uses:
-
-* `SMA20`
-* `SMA50`
-
-calculated using rolling 20-day and 50-day averages.
-
----
-
-## Backtesting
-
-The backtester calculates daily percentage returns and applies the strategy's position to those returns.
-
-I also included a transaction cost of **0.1% per signal/trade**:
-
-```python
-cost_rate = 0.001
-```
-
-The strategy's equity curve is then calculated by compounding the daily returns. A separate buy-and-hold equity curve is calculated as a benchmark.
-
-The backtest produces the following metrics:
-
-* Final strategy return
-* Buy-and-hold return
-* Number of signals/trades
-* Maximum drawdown
-* Sharpe ratio
-* Annualized return
-
-These statistics are calculated in `summary_stats()`.
-
----
-
-## Stocks Tested
-
-The current version tests six tickers:
-
-| Ticker | Company      |
-| ------ | ------------ |
-| AAPL   | Apple        |
-| BRBY.L | Burberry     |
-| TSLA   | Tesla        |
-| MSFT   | Microsoft    |
-| GOOGL  | Alphabet     |
-| RL     | Ralph Lauren |
-
-Market data is downloaded using `yfinance`, currently starting from **January 1, 2024** and continuing to the date on which the program is run.
-
----
-
-## Results
-
-The current run produced the following results:
-
-| Ticker | Strategy | Strategy Return | Buy & Hold | Trades | Max Drawdown | Sharpe |
-| ------ | -------- | --------------: | ---------: | -----: | -----------: | -----: |
-| AAPL   | EWMA     |           1.96% |     68.67% |     11 |      -33.99% |   0.17 |
-| AAPL   | SMA      |          -2.07% |     68.67% |     17 |      -35.33% |   0.10 |
-| BRBY.L | EWMA     |         -67.09% |    -23.57% |     16 |      -80.54% |  -0.92 |
-| BRBY.L | SMA      |          -8.51% |    -23.57% |     11 |      -59.93% |   0.10 |
-| TSLA   | EWMA     |          43.53% |     46.07% |      8 |      -54.34% |   0.53 |
-| TSLA   | SMA      |          23.97% |     46.07% |     12 |      -54.47% |   0.43 |
-| MSFT   | EWMA     |         -36.48% |     33.08% |     17 |      -48.79% |  -0.51 |
-| MSFT   | SMA      |         -50.04% |     33.08% |     14 |      -51.92% |  -0.88 |
-| GOOGL  | EWMA     |          67.90% |    151.78% |     11 |      -25.22% |   0.79 |
-| GOOGL  | SMA      |          91.36% |    151.78% |      8 |      -24.02% |   0.98 |
-| RL     | EWMA     |         -25.75% |    164.05% |     11 |      -47.45% |  -0.13 |
-| RL     | SMA      |         -57.84% |    164.05% |     13 |      -67.54% |  -0.78 |
-
-### Some observations
-
-A few things stood out from the results:
-
-1. **Buy-and-hold performed better than both moving-average strategies for most of these stocks.**
-
-2. **GOOGL was the strongest result for the moving-average strategies.**
-   The SMA strategy returned about 91.36%, compared with 151.78% for buy-and-hold.
-
-3. **TSLA produced relatively competitive results.**
-   EWMA returned approximately 43.53%, compared with 46.07% for buy-and-hold.
-
-4. **BRBY.L, MSFT and RL show how badly a simple crossover strategy can perform in some periods.**
-
-5. **EWMA and SMA can produce noticeably different results even though they use the same basic crossover idea.**
-
-These results are not evidence that one strategy is universally better. They simply describe what happened during this particular backtest period.
-
----
-
-## Visualisations
-
-The project generates two types of plots.
-
-### Price and Trading Signals
-
-For each stock and strategy, the program plots:
-
-* closing price
-* short moving average
-* long moving average
-* buy signals
-* sell signals
-
-The plotting code distinguishes between EWMA and SMA and places the crossover signals directly on the price chart.
-
-### Equity Curve
-
-The equity curve compares:
-
-* EWMA strategy
-* SMA strategy
-* Buy-and-hold
-
-This makes it easier to see how the strategies evolve over time rather than only looking at their final returns.
-
----
-
-## Project Structure
-
-```text
-moving_average_backtester/
-│
-├── main.py
-├── data.py
-├── strategy.py
-├── backtest.py
-├── plotting.py
-└── README.md
-```
-
-### `data.py`
-
-Responsible for downloading market data and determining the currency symbol for a ticker.
-
-### `strategy.py`
-
-Contains:
-
-* data cleaning
-* EWMA calculation
-* SMA calculation
-* buy/sell signal generation
-* position generation
-
-### `backtest.py`
-
-Contains:
-
-* strategy return calculation
-* transaction costs
-* equity curves
-* performance statistics
-* strategy agreement analysis
-
-### `plotting.py`
-
-Creates price/signal charts and strategy-vs-buy-and-hold equity curves.
-
-### `main.py`
-
-Acts as the pipeline connecting everything together.
-
-For each ticker it:
-
-1. downloads the data
-2. cleans the data
-3. generates EWMA signals
-4. generates SMA signals
-5. runs both backtests
-6. calculates statistics
-7. stores the results
-8. produces the plots
-
----
-
-## Running the Project
-
-### Requirements
-
-The project currently uses:
-
-```text
-Python
-numpy
-pandas
-matplotlib
-yfinance
-```
-
-Install the dependencies with:
+A Python backtesting framework that compares two moving-average crossover strategies — **EMA(20,50)** and **SMA(20,50)** — against a buy-and-hold baseline, across multiple tickers, with risk-adjusted performance metrics and transaction cost modeling.
+
+## What it does
+
+For a given stock ticker, the tool:
+
+1. Downloads historical daily price data (via `yfinance`)
+2. Generates buy/sell signals from both an EMA and an SMA crossover strategy (fast MA crossing above/below a slow MA)
+3. Backtests each strategy without lookahead bias (positions are lagged by one day — you can only trade on yesterday's signal, not today's)
+4. Applies a 0.1% per-trade transaction cost to simulate realistic trading friction
+5. Computes summary statistics: total return, buy-and-hold comparison, number of trades, max drawdown, Sharpe ratio, and annualized return
+6. Runs the same analysis across a list of tickers and builds a single comparison table
+7. Plots price charts (with buy/sell markers) and equity curves for visual inspection
+
+## Project structure
+
+| File | Responsibility |
+|---|---|
+| `data.py` | Fetches price data and currency metadata from Yahoo Finance |
+| `strategy.py` | Cleans raw data and generates EMA/SMA crossover signals |
+| `backtest.py` | Runs the backtest, applies transaction costs, computes summary stats |
+| `plotting.py` | Renders price and equity curve charts |
+| `main.py` | Orchestrates the pipeline across one or many tickers |
+
+## Running it
 
 ```bash
-pip install numpy pandas matplotlib yfinance
+python3 main.py
 ```
 
-### Run
+By default, `main()` runs the full pipeline across a fixed list of tickers (edit the `tickers` list in `main.py` to change them) and prints a comparison table. Plotting for individual tickers can be enabled by uncommenting the relevant calls in `run_pipeline`.
 
-Clone the repository and run:
+## Methodology notes
 
-```bash
-python main.py
-```
+- **No lookahead bias**: strategies trade on `yPosition_{suffix}`, the *previous* day's position — not the current day's, since you can't act on a signal before it exists.
+- **Transaction costs**: a flat 0.1% cost is deducted from daily strategy returns on any day a trade (buy or sell) occurs, applied before the equity curve is computed so it compounds realistically.
+- **Sharpe ratio**: computed from daily strategy returns, annualized by `√252` (standard trading-days-per-year convention), using a risk-free rate of 0.
+- **Annualized return**: computed as `(final_equity ** (252/n)) - 1`, where `n` is the count of valid (non-NaN) trading days for that strategy — not total row count, to avoid diluting the figure with the MA warm-up period.
+- **Currency handling**: price/equity labels dynamically pull the correct currency symbol per ticker (e.g. GBp for LSE-listed stocks, $ for US stocks) rather than assuming one currency.
 
-The program will download the latest available data for the configured tickers, run the backtests, print the comparison tables, and generate the visualisations.
+## Findings
 
----
+**EWMA and SMA converge more than expected, and the reason is mechanical, not coincidental.** Across all six tested tickers (AAPL, BRBY.L, TSLA, MSFT, GOOGL, RL), the EWMA and SMA strategies held the *same* market position (long/flat/short) on 77–92% of days, depending on the ticker. Investigating why: disagreement days cluster in short bursts right after each crossover event, not as sustained divergence. This is a direct consequence of the formulas themselves — EMA always weights the most recent price most heavily, so it reacts to a price move a few days before SMA (which weights all 20/50 days equally) catches up. The two strategies aren't fundamentally different signals; they're the same signal with slightly different timing.
 
-## What I Learned
+**There is no consistent winner between EWMA and SMA across tickers.** EWMA had a higher Sharpe ratio on 4 of 6 tickers, but SMA's occasional wins (notably BRBY.L, GOOGL) were sometimes larger in magnitude than EWMA's typical wins. The honest conclusion is a mild edge for EWMA on average, not a reliable one — performance is substantially ticker-dependent.
 
-This project was primarily a learning exercise.
+**Transaction costs matter more for high-frequency strategies, but don't explain everything.** Adding a realistic 0.1% per-trade cost degraded Sharpe ratios by roughly 2–4x more for high-trade-count strategies (16–17 trades) than for low-trade-count strategies (8 trades), confirming that trade frequency is a real, partial driver of underperformance. However, cost alone doesn't explain the full picture: strategies with *identical* trade counts still produced wildly different outcomes (e.g. GOOGL EWMA: +67.9% vs. RL EWMA: -25.7%, both at 11 trades), meaning the underlying price trajectory of each stock — trending vs. choppy — is a bigger factor than trade count or transaction cost alone.
 
-Some of the concepts I explored were:
+## Known limitations
 
-* Python project structure
-* working with financial time series
-* `pandas` DataFrames
-* moving averages
-* exponentially weighted moving averages
-* signal generation
-* position management
-* backtesting
-* transaction costs
-* cumulative returns
-* maximum drawdown
-* Sharpe ratio
-* annualised returns
-* data visualisation
-* comparing a strategy against a benchmark
+- Single fixed cost rate (0.1%) applied uniformly; real-world costs vary by broker, order size, and liquidity.
+- No slippage modeling for larger trade sizes.
+- No statistical significance testing on the Sharpe differences between strategies (small trade counts, especially at 8–13 trades, mean results could plausibly be noise rather than signal).
+- No out-of-sample/walk-forward validation — all results are in-sample over the same fixed date range.
+- Backtest currently covers a single date range (2024-01-01 to present) rather than testing performance across multiple, non-overlapping historical periods.
 
-One of the more interesting parts was discovering that a strategy that sounds reasonable in theory can perform substantially worse than simply holding the underlying asset.
+## Possible next steps
 
----
-
-## Limitations
-
-This is a relatively simple backtester and has several limitations.
-
-### 1. Very small strategy set
-
-Only two moving-average crossover strategies are currently implemented.
-
-### 2. Limited universe
-
-The backtest currently uses only six stocks.
-
-### 3. No portfolio construction
-
-Each stock is considered independently. There is currently no portfolio-level allocation, position sizing, or capital allocation model.
-
-### 4. Simplified transaction costs
-
-The model applies a fixed 0.1% cost to signals. Real trading costs can depend on the broker, market, liquidity, spread and order size.
-
-### 5. No slippage
-
-The model does not currently simulate bid-ask spreads or market impact.
-
-### 6. No parameter optimisation
-
-The 20/50 moving-average periods were chosen as fixed parameters rather than optimised against the data.
-
-### 7. No out-of-sample testing
-
-The current project does not separate training and testing periods, so the results should not be interpreted as evidence of future performance.
-
-### 8. "Number of trades"
-
-The current implementation counts non-zero signals, meaning a buy or sell signal is counted individually rather than grouping a complete buy-to-sell cycle into one round-trip trade.
-
----
-
-## Future Improvements
-
-Some things I would like to explore next:
-
-* [ ] Add more stocks and asset classes
-* [ ] Add configurable moving-average periods
-* [ ] Add more technical strategies
-* [ ] Add stop-loss and take-profit rules
-* [ ] Add slippage modelling
-* [ ] Add position sizing
-* [ ] Add portfolio-level backtesting
-* [ ] Add train/test splits
-* [ ] Perform walk-forward testing
-* [ ] Compare different transaction-cost assumptions
-* [ ] Add statistical significance testing
-* [ ] Improve the definition of a "trade"
-* [ ] Add automated performance reports
-* [ ] Investigate whether the apparent strategy differences are statistically meaningful
-
----
-
-## Why I Built This
-
-I am currently in the early stages of studying **Engineering Mathematics and Computer Science**, and this is my first project exploring quantitative finance.
-
-The goal was not to build a sophisticated trading system immediately, but to understand the basic mechanics of turning a mathematical idea into code:
-
-**mathematical idea → trading rule → signal → position → returns → backtest → evaluation**
-
-This project is the beginning of my exploration into quantitative finance and systematic trading.
-
----
-
-## Disclaimer
-
-This project is intended for **educational and research purposes only**.
-
-Backtested performance does not guarantee future results. The strategies implemented here are simplified models and should not be used as a basis for real financial decisions without substantially more research, testing and risk analysis.
+- Walk-forward validation (fit crossover parameters on one period, test on a later untouched period)
+- Parameter sensitivity analysis across different (fast, slow) window pairs, not just (20, 50)
+- Statistical significance testing on Sharpe ratio differences (e.g. bootstrap resampling)
