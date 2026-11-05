@@ -1,4 +1,11 @@
-numpy
-pandas
-matplotlib
-yfinance
+cat > requirements.txt <<'EOF'
+numpy>=1.26,<3
+pandas>=2.0,<4
+matplotlib>=3.7
+yfinance>=0.2.40
+
+# Lower bounds only: yfinance changed its column layout to a MultiIndex around
+# 0.2.40, and strategy.clean_data depends on that layout. After your first
+# successful run, freeze exact versions so the environment is reproducible:
+#     pip freeze > requirements.lock
+EOF

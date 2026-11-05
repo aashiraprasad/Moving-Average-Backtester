@@ -37,3 +37,11 @@ def generate_signals_SMA(stock_data):
     stock_data['Position_SMA'] = stock_data['Signal_SMA'].replace(0, float('nan')).ffill().fillna(0)
     stock_data['yPosition_SMA']=stock_data['Position_SMA'].shift(1)
     return stock_data
+
+def warmup_rows(stock_data):
+    """First row on which the slow MA exists, so a signal is possible at all.
+
+    Both strategies share this start so they are compared over the same window.
+    """
+    valid = stock_data['SMA50'].notna().to_numpy()
+    return int(valid.argmax()) if valid.any() else 0
